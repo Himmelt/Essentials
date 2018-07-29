@@ -28,7 +28,7 @@ public enum MobData {
     TAMED_TAMEABLE("tamed", Tameable.class, Data.TAMED, true),
     TAME_TAMEABLE("tame", Tameable.class, Data.TAMED, false),
     RANDOM_SHEEP("random", EntityType.SHEEP, Data.COLORABLE, true),
-    COLORABLE_SHEEP("", StringUtil.joinList(DyeColor.values()).toLowerCase(Locale.ENGLISH), EntityType.SHEEP, Data.COLORABLE, true),
+    COLORABLE_SHEEP("", StringUtil.joinList((Object[]) DyeColor.values()).toLowerCase(Locale.ENGLISH), EntityType.SHEEP, Data.COLORABLE, true),
     DONKEY_HORSE("donkey", EntityType.HORSE, Horse.Variant.DONKEY, true),
     MULE_HORSE("mule", EntityType.HORSE, Horse.Variant.MULE, true),
     SKELETON_HORSE("skeleton", EntityType.HORSE, Horse.Variant.SKELETON_HORSE, true),
