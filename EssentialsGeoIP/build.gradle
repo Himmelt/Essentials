@@ -1,0 +1,4 @@
+dependencies {
+    compile project(':Essentials')
+    compile 'com.maxmind.geoip:geoip-api:1.2.11'
+}

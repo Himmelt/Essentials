@@ -1,0 +1,19 @@
+dependencies {
+    compile project(':EssentialsGroupManager')
+    compile 'org.spigotmc:spigot-api:1.8-R0.1-SNAPSHOT'
+    compile 'org.projectlombok:lombok:1.12.2'
+    compile files('../lib/BOSEconomy.jar')
+    compile files('../lib/bPermissions-2.12.jar')
+    compile files('../lib/iCo5.jar')
+    compile files('../lib/iCo6.jar')
+    compile files('../lib/iCo5.jar')
+    compile files('../lib/iCo5.jar')
+    compile files('../lib/iCo5.jar')
+    compile files('../lib/MultiCurrency.jar')
+    compile files('../lib/PermissionsBukkit.jar')
+    compile files('../lib/PermissionsEx.jar')
+    compile files('../lib/Privileges.jar')
+    compile files('../lib/SimplyPerms.jar')
+    compile files('../lib/Vault.jar')
+    compile files('../lib/zPermissions.jar')
+}

@@ -1,0 +1,10 @@
+rootProject.name = 'EssentialsParent'
+
+include 'Essentials'
+include 'EssentialsAntiBuild'
+include 'EssentialsChat'
+include 'EssentialsGeoIP'
+include 'EssentialsGroupManager'
+include 'EssentialsProtect'
+include 'EssentialsSpawn'
+include 'EssentialsXMPP'
