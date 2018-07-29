@@ -2,6 +2,8 @@ subprojects {
 
     apply plugin: 'java'
 
+    project.buildDir = new File(project.rootDir, 'build')
+
     repositories {
         jcenter()
         maven {
