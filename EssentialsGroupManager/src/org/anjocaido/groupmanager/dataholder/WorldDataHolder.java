@@ -18,6 +18,8 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -58,6 +60,11 @@ public class WorldDataHolder {
 	 * The actual users holder
 	 */
 	protected UsersDataHolder users = new UsersDataHolder();
+	
+	/**
+	 * List of UUID's associated with this user name.
+	 */
+	protected static Map<String, Set<String>> nameToUUIDLookup = new TreeMap<String, Set<String>>();
 	/**
      *
      */
@@ -101,8 +108,10 @@ public class WorldDataHolder {
 	}
 
 	/**
-	 * Search for a user. If it doesn't exist, create a new one with default
-	 * group.
+	 * Search for a user. If it doesn't exist, create a new one with default group.
+	 * 
+	 * If this is called passing a player name with mantogglevalidate off
+	 * it can return the wrong user object (offline/online UUID match).
 	 * 
 	 * @param userId the UUID String or name of the user
 	 * @return class that manage that user permission
@@ -114,21 +123,26 @@ public class WorldDataHolder {
 		}
 		
 		// Legacy name matching
-		if (userId.length() < 36) {
+		if ((userId.length() < 36) && nameToUUIDLookup.containsKey(userId.toLowerCase())) {
 
-			// Search for a LastName match
-			for (User user : getUserList()) {
+			// Search for a name to UUID match
+			for (String uid : getUUIDLookup(userId.toLowerCase())) {
 				
-				if (user.getLastName().equalsIgnoreCase(userId)) {
+				User user = getUsers().get(uid.toLowerCase());
+				
+				if ((user != null) && user.getLastName().equalsIgnoreCase(userId)) {
 					return user;
 				}
 			}
 			
 		}
 		
+		if (!nameToUUIDLookup.containsKey(userId.toLowerCase())) {
+			GroupManager.logger.fine("ERROR: No lookup for: " + userId);
+		}
+		
 		// No user account found so create a new one.
 		User newUser = createUser(userId);
-		
 		return newUser;
 	}
 	
@@ -147,32 +161,38 @@ public class WorldDataHolder {
 		
 		if (user != null) {
 			
+			GroupManager.logger.fine("User record found for UUID: " + uUID + ":" + currentName);
 			user.setLastName(currentName);
 			return user;
 			
 		}
 		
 		// Search for a LastName match
-		for (User usr : getUserList()) {
+		user = getUsers().get(currentName.toLowerCase());
+		
+		if ((user != null) && user.getLastName().equalsIgnoreCase(currentName) && user.getUUID().equalsIgnoreCase(user.getLastName())) {
 			
-			if (usr.getLastName().equalsIgnoreCase(currentName) && usr.getUUID().equalsIgnoreCase(usr.getLastName())) {
-				
-				// Clone this user so we can set it's uUID
-				user = usr.clone(uUID, currentName);
-				
-				// Delete it and replace with the new clone.
-				this.removeUser(usr.getUUID());
-				this.addUser(user);
-				
-				return getUsers().get(uUID.toLowerCase());
-			}
+			// Clone this user so we can set it's uUID
+			User usr = user.clone(uUID, currentName);
 			
+			// Delete it and replace with the new clone.
+			this.removeUser(user.getUUID().toLowerCase());
+			this.addUser(usr);
+			
+			GroupManager.logger.fine("Updating User record for UUID: " + uUID + ":" + currentName);
+			
+			return getUsers().get(uUID.toLowerCase());
 		}
-			
+		
+		if (user != null) {
+			GroupManager.logger.fine("User record found but UUID mismatch for: " + currentName);
+		}
 		
 		// No user account found so create a new one.
-		User newUser = createUser(uUID);
+		User newUser = createUser(uUID.toLowerCase());
 		newUser.setLastName(currentName);
+		
+		GroupManager.logger.fine("New User record created: " + uUID + ":" + currentName);
 		
 		return newUser;
 	}
@@ -193,8 +213,12 @@ public class WorldDataHolder {
 		if ((theUser.getGroup() == null)) {
 			theUser.setGroup(groups.getDefaultGroup());
 		}
-		removeUser(theUser.getUUID());
+		removeUser(theUser.getUUID().toLowerCase());
 		getUsers().put(theUser.getUUID().toLowerCase(), theUser);
+		
+		// Store for name to UUID lookups.
+		//putUUIDLookup(theUser.getLastName(), theUser.getUUID().toLowerCase());
+		
 		setUsersChanged(true);
 		if (GroupManager.isLoaded())
 			GroupManager.getGMEventHandler().callEvent(theUser, Action.USER_ADDED);
@@ -209,10 +233,19 @@ public class WorldDataHolder {
 	public boolean removeUser(String userId) {
 
 		if (getUsers().containsKey(userId.toLowerCase())) {
+			
+			User user = getUser(userId.toLowerCase());
+			
+			// Remove the name to UUID lookup for this user object.
+			removeUUIDLookup(user.getLastName().toLowerCase(), user.getUUID());
+			
 			getUsers().remove(userId.toLowerCase());
+			
 			setUsersChanged(true);
+			
 			if (GroupManager.isLoaded())
 				GroupManager.getGMEventHandler().callEvent(userId, GMUserEvent.Action.USER_REMOVED);
+			
 			return true;
 		}
 		return false;
@@ -877,7 +910,7 @@ public class WorldDataHolder {
 					nodeData = thisUserNode.get("lastname");
 					
 				} catch (Exception ex) {
-					throw new IllegalArgumentException("Bad format found in 'subgroups' for user: " + usersKey + " in file: " + usersFile.getPath());
+					throw new IllegalArgumentException("Bad format found in 'lastname' for user: " + usersKey + " in file: " + usersFile.getPath());
 				}
 				
 				if ((nodeData != null) && (nodeData instanceof String)) {
@@ -926,42 +959,6 @@ public class WorldDataHolder {
 					}
 					thisUser.sortPermissions();
 				}
-				
-
-				// SUBGROUPS NODES
-
-				nodeData = null;
-				try {
-					nodeData = thisUserNode.get("subgroups");
-				} catch (Exception ex) {
-					throw new IllegalArgumentException("Bad format found in 'subgroups' for user: " + usersKey + " in file: " + usersFile.getPath());
-				}
-
-				if (nodeData == null) {
-					/*
-					 * If no subgroups node is found, or it's empty do nothing.
-					 */
-				} else if (nodeData instanceof List) {
-					for (Object o : ((List) nodeData)) {
-						if (o == null) {
-							GroupManager.logger.warning("Invalid Subgroup data for user: " + thisUser.getLastName() + ". Ignoring entry in file: " + usersFile.getPath());
-						} else {
-							Group subGrp = ph.getGroup(o.toString());
-							if (subGrp != null) {
-								thisUser.addSubGroup(subGrp);
-							} else {
-								GroupManager.logger.warning("Subgroup '" + o.toString() + "' not found for user: " + thisUser.getLastName() + ". Ignoring entry in file: " + usersFile.getPath());
-							}
-						}
-					}
-				} else if (nodeData instanceof String) {
-					Group subGrp = ph.getGroup(nodeData.toString());
-					if (subGrp != null) {
-						thisUser.addSubGroup(subGrp);
-					} else {
-						GroupManager.logger.warning("Subgroup '" + nodeData.toString() + "' not found for user: " + thisUser.getLastName() + ". Ignoring entry in file: " + usersFile.getPath());
-					}
-				}
 
 				// USER INFO NODE
 
@@ -1002,6 +999,41 @@ public class WorldDataHolder {
 					thisUser.setGroup(hisGroup);
 				} else {
 					thisUser.setGroup(ph.getDefaultGroup());
+				}
+				
+				// SUBGROUPS NODES
+
+				nodeData = null;
+				try {
+					nodeData = thisUserNode.get("subgroups");
+				} catch (Exception ex) {
+					throw new IllegalArgumentException("Bad format found in 'subgroups' for user: " + usersKey + " in file: " + usersFile.getPath());
+				}
+
+				if (nodeData == null) {
+					/*
+					 * If no subgroups node is found, or it's empty do nothing.
+					 */
+				} else if (nodeData instanceof List) {
+					for (Object o : ((List) nodeData)) {
+						if (o == null) {
+							GroupManager.logger.warning("Invalid Subgroup data for user: " + thisUser.getLastName() + ". Ignoring entry in file: " + usersFile.getPath());
+						} else {
+							Group subGrp = ph.getGroup(o.toString());
+							if (subGrp != null) {
+								thisUser.addSubGroup(subGrp);
+							} else {
+								GroupManager.logger.warning("Subgroup '" + o.toString() + "' not found for user: " + thisUser.getLastName() + ". Ignoring entry in file: " + usersFile.getPath());
+							}
+						}
+					}
+				} else if (nodeData instanceof String) {
+					Group subGrp = ph.getGroup(nodeData.toString());
+					if (subGrp != null) {
+						thisUser.addSubGroup(subGrp);
+					} else {
+						GroupManager.logger.warning("Subgroup '" + nodeData.toString() + "' not found for user: " + thisUser.getLastName() + ". Ignoring entry in file: " + usersFile.getPath());
+					}
 				}
 			}
 		}
@@ -1351,6 +1383,7 @@ public class WorldDataHolder {
 	public void resetUsers() {
 
 		users.resetUsers();
+		this.clearUUIDLookup();
 	}
 
 	/**
@@ -1443,6 +1476,70 @@ public class WorldDataHolder {
 			setTimeStampGroups(getGroupsFile().lastModified());
 		if (getUsersFile() != null)
 			setTimeStampUsers(getUsersFile().lastModified());
+	}
+	
+	/** Name to UUID lookups **/
+	
+	/**
+	 * Add a new name to UUID lookup.
+	 * 
+	 * @param name the User name key to index on.
+	 * @param UUID the User object UUID (same as name if there is no UUID).
+	 */
+	public void putUUIDLookup(String name, String UUID) {
+		
+		Set<String> lookup = getUUIDLookup(name.toLowerCase());
+		
+		if (lookup == null)
+			lookup = new TreeSet<String>();
+		
+		lookup.add(UUID);
+		
+		nameToUUIDLookup.put(name.toLowerCase(), lookup);
+	}
+	
+	/**
+	 * Delete a name lookup.
+	 * Allows for multiple UUID's assigned to a single name (offline/online)
+	 * 
+	 * @param name
+	 * @param UUID 
+	 */
+	public void removeUUIDLookup(String name, String UUID) {
+		
+		if (nameToUUIDLookup.containsKey(name.toLowerCase())) {
+			
+			Set<String> lookup = getUUIDLookup(name.toLowerCase());
+			
+			lookup.remove(UUID);
+			
+			if (lookup.isEmpty()) {
+				nameToUUIDLookup.remove(name.toLowerCase());
+				return;				
+			}
+				
+			nameToUUIDLookup.put(name.toLowerCase(), lookup);
+			
+		}
+		
+	}
+	
+	/**
+	 * 
+	 * @param name
+	 * @return a Set of strings containing the User objects UUID (or name if they don't have a UUID)
+	 */
+	public Set<String> getUUIDLookup(String name) {
+		
+		return nameToUUIDLookup.get(name.toLowerCase());
+	}
+	
+	/**
+	 * Reset the UUID Lookup cache
+	 */
+	protected void clearUUIDLookup() {
+		
+		nameToUUIDLookup.clear();
 	}
 
 }

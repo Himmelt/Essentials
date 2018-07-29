@@ -67,7 +67,7 @@ public class AnjoPermissionsHandler extends PermissionsReaderInterface {
 	@Override
 	public boolean permission(Player player, String permission) {
 
-		return checkUserPermission(ph.getUser(player.getName()).updatePlayer(player), permission);
+		return checkUserPermission(ph.getUser(player.getUniqueId().toString()).updatePlayer(player), permission);
 	}
 
 	/**
@@ -1069,12 +1069,20 @@ public class AnjoPermissionsHandler extends PermissionsReaderInterface {
 				
 				if (resultNow.resultType.equals(PermissionCheckResult.Type.EXCEPTION)) {
 					resultNow.accessLevel = targetPermission;
+					GroupManager.logger.fine("Found an " + resultNow.resultType + " for " + targetPermission + " in group " + resultNow.owner.getLastName());
 					return resultNow;
 				}
 				
-				// Negation found so store for later
-				// as we need to continue looking for an Exception.
-				result = resultNow;
+				/*
+				 * Store the first found permission only.
+				 * This will prevent inherited permission negations overriding higher level perms.
+				 */
+				if (result.resultType.equals(PermissionCheckResult.Type.NOTFOUND)) {
+					// No Negation found so store for later
+					// as we need to continue looking for an Exception.
+					GroupManager.logger.fine("Found an " + resultNow.resultType + " for " + targetPermission + " in group " + resultNow.owner.getLastName());
+					result = resultNow;
+				}
 			}
 			
 			for (String sonName : now.getInherits()) {

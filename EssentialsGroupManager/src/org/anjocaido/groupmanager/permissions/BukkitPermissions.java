@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
 
 import org.anjocaido.groupmanager.GroupManager;
 import org.anjocaido.groupmanager.data.User;
@@ -54,7 +53,7 @@ import org.bukkit.plugin.PluginManager;
  */
 public class BukkitPermissions {
 
-	protected WeakHashMap<String, PermissionAttachment> attachments = new WeakHashMap<String, PermissionAttachment>();
+	protected LinkedHashMap<String, PermissionAttachment> attachments = new LinkedHashMap<String, PermissionAttachment>();
 	protected LinkedHashMap<String, Permission> registeredPermissions = new LinkedHashMap<String, Permission>();
 	protected GroupManager plugin;
 	protected boolean dumpAllPermissions = true;
@@ -147,21 +146,22 @@ public class BukkitPermissions {
 			return;
 		}
 
-		String name = player.getName();
+		String uuid = player.getUniqueId().toString();
 
 		// Reset the User objects player reference.
-		User user = plugin.getWorldsHolder().getWorldData(player.getWorld().getName()).getUser(name);
+		User user = plugin.getWorldsHolder().getWorldData(player.getWorld().getName()).getUser(uuid, player.getName());
+		
 		if (user != null)
 			user.updatePlayer(player);
 
 		PermissionAttachment attachment;
 
 		// Find the players current attachment, or add a new one.
-		if (this.attachments.containsKey(name)) {
-			attachment = this.attachments.get(name);
+		if (this.attachments.containsKey(uuid)) {
+			attachment = this.attachments.get(uuid);
 		} else {
 			attachment = player.addAttachment(plugin);
-			this.attachments.put(name, attachment);
+			this.attachments.put(uuid, attachment);
 		}
 
 		if (world == null) {
@@ -170,7 +170,7 @@ public class BukkitPermissions {
 
 		// Add all permissions for this player (GM only)
 		// child nodes will be calculated by Bukkit.
-		List<String> playerPermArray = new ArrayList<String>(plugin.getWorldsHolder().getWorldData(world).getPermissionsHandler().getAllPlayersPermissions(name, false));
+		List<String> playerPermArray = new ArrayList<String>(plugin.getWorldsHolder().getWorldData(world).getPermissionsHandler().getAllPlayersPermissions(uuid, false));
 		LinkedHashMap<String, Boolean> newPerms = new LinkedHashMap<String, Boolean>();
 
 		// Sort the perm list by parent/child, so it will push to superperms
@@ -190,7 +190,7 @@ public class BukkitPermissions {
 		 */
 		if (!Bukkit.getServer().getOnlineMode()
 				&& (newPerms.containsKey("groupmanager.noofflineperms") && (newPerms.get("groupmanager.noofflineperms") == true))) {
-			removeAttachment(name);
+			removeAttachment(uuid);
 			return;
 		}
 
@@ -219,7 +219,7 @@ public class BukkitPermissions {
 			e.printStackTrace();
 		}
 
-		GroupManager.logger.finest("Attachment updated for: " + name);
+		GroupManager.logger.finest("Attachment updated for: " + player.getName());
 	}
 
 	/**
@@ -399,11 +399,11 @@ public class BukkitPermissions {
 	 * 
 	 * @param player
 	 */
-	private void removeAttachment(String playerName) {
+	private void removeAttachment(String uuid) {
 
-		if (attachments.containsKey(playerName)) {
-			attachments.get(playerName).remove();
-			attachments.remove(playerName);
+		if (attachments.containsKey(uuid)) {
+			attachments.get(uuid).remove();
+			attachments.remove(uuid);
 		}
 	}
 
@@ -442,7 +442,7 @@ public class BukkitPermissions {
 			/*
 			 * Tidy up any lose ends
 			 */
-			removeAttachment(player.getName());
+			removeAttachment(player.getUniqueId().toString());
 
 			// force GM to create the player if they are not already listed.
 			plugin.getWorldsHolder().getWorldData(player.getWorld().getName()).getUser(player.getUniqueId().toString(), player.getName());
@@ -469,11 +469,17 @@ public class BukkitPermissions {
 				return;
 
 			Player player = event.getPlayer();
+			String uuid = player.getUniqueId().toString();
+			
+			// Reset the User objects player reference.
+			User user = plugin.getWorldsHolder().getWorldData(player.getWorld().getName()).getUser(uuid, player.getName());
+			
+			user.updatePlayer(null);
 
 			/*
 			 * force remove any attachments as bukkit may not
 			 */
-			removeAttachment(player.getName());
+			removeAttachment(uuid);
 		}
 	}
 

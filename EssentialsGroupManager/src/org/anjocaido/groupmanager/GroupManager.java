@@ -12,6 +12,7 @@ import org.anjocaido.groupmanager.data.Variables;
 import org.anjocaido.groupmanager.data.User;
 import org.anjocaido.groupmanager.data.Group;
 import org.anjocaido.groupmanager.dataholder.OverloadedWorldHolder;
+import org.anjocaido.groupmanager.metrics.Metrics;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -84,6 +85,17 @@ public class GroupManager extends JavaPlugin {
 	
 	@Override
 	public void onEnable() {
+		
+		/*
+		 * Register Metrics
+		 */
+		try {
+		    Metrics metrics = new Metrics(this);
+		    metrics.start();
+		} catch (IOException e) {
+			System.err.println("[GroupManager] Error setting up metrics");
+		}
+		
 		/*
 		 * Initialize the event handler
 		 */
@@ -405,7 +417,7 @@ public class GroupManager extends JavaPlugin {
 				return true;
 			}
 
-			senderUser = worldsHolder.getWorldData(senderPlayer).getUser(senderPlayer.getName());
+			senderUser = worldsHolder.getWorldData(senderPlayer).getUser(senderPlayer.getUniqueId().toString());
 			senderGroup = senderUser.getGroup();
 			isOpOverride = (isOpOverride && (senderPlayer.isOp() || worldsHolder.getWorldPermissions(senderPlayer).has(senderPlayer, "groupmanager.op")));
 
@@ -522,7 +534,7 @@ public class GroupManager extends JavaPlugin {
 				}
 
 				// Validating permissions
-				if (!isConsole && !isOpOverride && (senderGroup != null ? permissionHandler.inGroup(auxUser.getLastName(), senderGroup.getName()) : false)) {
+				if (!isConsole && !isOpOverride && (senderGroup != null ? permissionHandler.inGroup(auxUser.getUUID(), senderGroup.getName()) : false)) {
 					sender.sendMessage(ChatColor.RED + "Can't modify a player with the same permissions as you, or higher.");
 					return true;
 				}
@@ -530,7 +542,7 @@ public class GroupManager extends JavaPlugin {
 					sender.sendMessage(ChatColor.RED + "The destination group can't be the same as yours, or higher.");
 					return true;
 				}
-				if (!isConsole && !isOpOverride && (!permissionHandler.inGroup(senderUser.getLastName(), auxUser.getGroupName()) || !permissionHandler.inGroup(senderUser.getLastName(), auxGroup.getName()))) {
+				if (!isConsole && !isOpOverride && (!permissionHandler.inGroup(senderUser.getUUID(), auxUser.getGroupName()) || !permissionHandler.inGroup(senderUser.getUUID(), auxGroup.getName()))) {
 					sender.sendMessage(ChatColor.RED + "You can't modify a player involving a group that you don't inherit.");
 					return true;
 				}
@@ -563,12 +575,12 @@ public class GroupManager extends JavaPlugin {
 					auxUser = dataHolder.getUser(args[0]);
 				}
 				// Validating permission
-				if (!isConsole && !isOpOverride && (senderGroup != null ? permissionHandler.inGroup(auxUser.getLastName(), senderGroup.getName()) : false)) {
+				if (!isConsole && !isOpOverride && (senderGroup != null ? permissionHandler.inGroup(auxUser.getUUID(), senderGroup.getName()) : false)) {
 					sender.sendMessage(ChatColor.RED + "You can't modify a player with same permissions as you, or higher.");
 					return true;
 				}
 				// Seems OK
-				dataHolder.removeUser(auxUser.getLastName());
+				dataHolder.removeUser(auxUser.getUUID());
 				sender.sendMessage(ChatColor.YELLOW + "You changed player '" + auxUser.getLastName() + "' to default settings.");
 
 				// If the player is online, this will create new data for the user.
@@ -607,7 +619,7 @@ public class GroupManager extends JavaPlugin {
 					return true;
 				}
 				// Validating permission
-				if (!isConsole && !isOpOverride && (senderGroup != null ? permissionHandler.inGroup(auxUser.getLastName(), senderGroup.getName()) : false)) {
+				if (!isConsole && !isOpOverride && (senderGroup != null ? permissionHandler.inGroup(auxUser.getUUID(), senderGroup.getName()) : false)) {
 					sender.sendMessage(ChatColor.RED + "You can't modify a player with same permissions as you, or higher.");
 					return true;
 				}
@@ -615,7 +627,7 @@ public class GroupManager extends JavaPlugin {
 					sender.sendMessage(ChatColor.RED + "The sub-group can't be the same as yours, or higher.");
 					return true;
 				}
-				if (!isConsole && !isOpOverride && (!permissionHandler.inGroup(senderUser.getLastName(), auxUser.getGroupName()) || !permissionHandler.inGroup(senderUser.getLastName(), auxGroup.getName()))) {
+				if (!isConsole && !isOpOverride && (!permissionHandler.inGroup(senderUser.getUUID(), auxUser.getGroupName()) || !permissionHandler.inGroup(senderUser.getUUID(), auxGroup.getName()))) {
 					sender.sendMessage(ChatColor.RED + "You can't modify a player involving a group that you don't inherit.");
 					return true;
 				}
@@ -654,7 +666,7 @@ public class GroupManager extends JavaPlugin {
 				}
 
 				// Validating permission
-				if (!isConsole && !isOpOverride && (senderGroup != null ? permissionHandler.inGroup(auxUser.getLastName(), senderGroup.getName()) : false)) {
+				if (!isConsole && !isOpOverride && (senderGroup != null ? permissionHandler.inGroup(auxUser.getUUID(), senderGroup.getName()) : false)) {
 					sender.sendMessage(ChatColor.RED + "You can't modify a player with same permissions as you, or higher.");
 					return true;
 				}
@@ -737,7 +749,7 @@ public class GroupManager extends JavaPlugin {
 				}
 				
 				// Validating your permissions
-				if (!isConsole && !isOpOverride && (senderGroup != null ? permissionHandler.inGroup(auxUser.getLastName(), senderGroup.getName()) : false)) {
+				if (!isConsole && !isOpOverride && (senderGroup != null ? permissionHandler.inGroup(auxUser.getUUID(), senderGroup.getName()) : false)) {
 					sender.sendMessage(ChatColor.RED + "Can't modify player with same group than you, or higher.");
 					return true;
 				}
@@ -795,7 +807,7 @@ public class GroupManager extends JavaPlugin {
 				{
 					auxString = args[i].replace("'", "");
 				
-					if (!isConsole && !isOpOverride && (senderGroup != null ? permissionHandler.inGroup(auxUser.getLastName(), senderGroup.getName()) : false)) {
+					if (!isConsole && !isOpOverride && (senderGroup != null ? permissionHandler.inGroup(auxUser.getUUID(), senderGroup.getName()) : false)) {
 						sender.sendMessage(ChatColor.RED + "You can't modify a player with same group as you, or higher.");
 						continue;
 					}
@@ -849,7 +861,7 @@ public class GroupManager extends JavaPlugin {
 					auxUser = dataHolder.getUser(args[0]);
 				}
 				// Validating your permissions
-				if (!isConsole && !isOpOverride && (senderGroup != null ? permissionHandler.inGroup(auxUser.getLastName(), senderGroup.getName()) : false)) {
+				if (!isConsole && !isOpOverride && (senderGroup != null ? permissionHandler.inGroup(auxUser.getUUID(), senderGroup.getName()) : false)) {
 					sender.sendMessage(ChatColor.RED + "You can't modify a player with same group as you, or higher.");
 					return true;
 				}
@@ -1247,7 +1259,7 @@ public class GroupManager extends JavaPlugin {
 				}
 				// Seems OK
 				auxGroup.addInherits(auxGroup2);
-				sender.sendMessage(ChatColor.RED + "Group " + auxGroup2.getName() + " is now in " + auxGroup.getName() + " inheritance list.");
+				sender.sendMessage(ChatColor.YELLOW + "Group " + auxGroup2.getName() + " is now in " + auxGroup.getName() + " inheritance list.");
 
 				BukkitPermissions.updateAllPlayers();
 
@@ -1281,16 +1293,16 @@ public class GroupManager extends JavaPlugin {
 
 				// Validating permission
 				if (!permissionHandler.hasGroupInInheritance(auxGroup, auxGroup2.getName())) {
-					sender.sendMessage(ChatColor.RED + "Group " + auxGroup.getName() + " does not inherits " + auxGroup2.getName() + ".");
+					sender.sendMessage(ChatColor.RED + "Group " + auxGroup.getName() + " does not inherit " + auxGroup2.getName() + ".");
 					return true;
 				}
 				if (!auxGroup.getInherits().contains(auxGroup2.getName())) {
-					sender.sendMessage(ChatColor.RED + "Group " + auxGroup.getName() + " does not inherits " + auxGroup2.getName() + " directly.");
+					sender.sendMessage(ChatColor.RED + "Group " + auxGroup.getName() + " does not inherit " + auxGroup2.getName() + " directly.");
 					return true;
 				}
 				// Seems OK
 				auxGroup.removeInherits(auxGroup2.getName());
-				sender.sendMessage(ChatColor.RED + "Group " + auxGroup2.getName() + " was removed from " + auxGroup.getName() + " inheritance list.");
+				sender.sendMessage(ChatColor.YELLOW + "Group " + auxGroup2.getName() + " was removed from " + auxGroup.getName() + " inheritance list.");
 
 				BukkitPermissions.updateAllPlayers();
 
@@ -1620,8 +1632,8 @@ public class GroupManager extends JavaPlugin {
 					sender.sendMessage(ChatColor.YELLOW + "subgroups: " + auxString);
 				}
 
-				sender.sendMessage(ChatColor.YELLOW + "Overloaded: " + ChatColor.GREEN + dataHolder.isOverloaded(auxUser.getLastName()));
-				auxGroup = dataHolder.surpassOverload(auxUser.getLastName()).getGroup();
+				sender.sendMessage(ChatColor.YELLOW + "Overloaded: " + ChatColor.GREEN + dataHolder.isOverloaded(auxUser.getUUID()));
+				auxGroup = dataHolder.surpassOverload(auxUser.getUUID()).getGroup();
 				if (!auxGroup.equals(auxUser.getGroup())) {
 					sender.sendMessage(ChatColor.YELLOW + "Original Group: " + ChatColor.GREEN + auxGroup.getName());
 				}
@@ -1648,7 +1660,7 @@ public class GroupManager extends JavaPlugin {
 					auxUser = dataHolder.getUser(args[0]);
 				}
 				// Validating permission
-				if (!isConsole && !isOpOverride && (senderGroup != null ? permissionHandler.inGroup(auxUser.getLastName(), senderGroup.getName()) : false)) {
+				if (!isConsole && !isOpOverride && (senderGroup != null ? permissionHandler.inGroup(auxUser.getUUID(), senderGroup.getName()) : false)) {
 					sender.sendMessage(ChatColor.RED + "Can't modify player with same permissions than you, or higher.");
 					return true;
 				}
@@ -1656,8 +1668,8 @@ public class GroupManager extends JavaPlugin {
 				if (overloadedUsers.get(dataHolder.getName().toLowerCase()) == null) {
 					overloadedUsers.put(dataHolder.getName().toLowerCase(), new ArrayList<User>());
 				}
-				dataHolder.overloadUser(auxUser.getLastName());
-				overloadedUsers.get(dataHolder.getName().toLowerCase()).add(dataHolder.getUser(auxUser.getLastName()));
+				dataHolder.overloadUser(auxUser.getUUID());
+				overloadedUsers.get(dataHolder.getName().toLowerCase()).add(dataHolder.getUser(auxUser.getUUID()));
 				sender.sendMessage(ChatColor.YELLOW + "Player set to overload mode!");
 
 				return true;
@@ -1682,7 +1694,7 @@ public class GroupManager extends JavaPlugin {
 					auxUser = dataHolder.getUser(args[0]);
 				}
 				// Validating permission
-				if (!isConsole && !isOpOverride && (senderGroup != null ? permissionHandler.inGroup(auxUser.getLastName(), senderGroup.getName()) : false)) {
+				if (!isConsole && !isOpOverride && (senderGroup != null ? permissionHandler.inGroup(auxUser.getUUID(), senderGroup.getName()) : false)) {
 					sender.sendMessage(ChatColor.RED + "You can't modify a player with same permissions as you, or higher.");
 					return true;
 				}
@@ -1690,7 +1702,7 @@ public class GroupManager extends JavaPlugin {
 				if (overloadedUsers.get(dataHolder.getName().toLowerCase()) == null) {
 					overloadedUsers.put(dataHolder.getName().toLowerCase(), new ArrayList<User>());
 				}
-				dataHolder.removeOverload(auxUser.getLastName());
+				dataHolder.removeOverload(auxUser.getUUID());
 				if (overloadedUsers.get(dataHolder.getName().toLowerCase()).contains(auxUser)) {
 					overloadedUsers.get(dataHolder.getName().toLowerCase()).remove(auxUser);
 				}
@@ -1709,7 +1721,7 @@ public class GroupManager extends JavaPlugin {
 				removeList = new ArrayList<User>();
 				count = 0;
 				for (User u : overloadedUsers.get(dataHolder.getName().toLowerCase())) {
-					if (!dataHolder.isOverloaded(u.getLastName())) {
+					if (!dataHolder.isOverloaded(u.getUUID())) {
 						removeList.add(u);
 					} else {
 						auxString += u.getLastName() + ", ";
@@ -1739,8 +1751,8 @@ public class GroupManager extends JavaPlugin {
 				removeList = new ArrayList<User>();
 				count = 0;
 				for (User u : overloadedUsers.get(dataHolder.getName().toLowerCase())) {
-					if (dataHolder.isOverloaded(u.getLastName())) {
-						dataHolder.removeOverload(u.getLastName());
+					if (dataHolder.isOverloaded(u.getUUID())) {
+						dataHolder.removeOverload(u.getUUID());
 						count++;
 					}
 				}
@@ -1880,7 +1892,7 @@ public class GroupManager extends JavaPlugin {
 					return true;
 				}
 				// Validating permission
-				if (!isConsole && !isOpOverride && (senderGroup != null ? permissionHandler.inGroup(auxUser.getLastName(), senderGroup.getName()) : false)) {
+				if (!isConsole && !isOpOverride && (senderGroup != null ? permissionHandler.inGroup(auxUser.getUUID(), senderGroup.getName()) : false)) {
 					sender.sendMessage(ChatColor.RED + "You can't modify a player with same permissions as you, or higher.");
 					return true;
 				}
@@ -1888,7 +1900,7 @@ public class GroupManager extends JavaPlugin {
 					sender.sendMessage(ChatColor.RED + "The destination group can't be the same as yours, or higher.");
 					return true;
 				}
-				if (!isConsole && !isOpOverride && (!permissionHandler.inGroup(senderUser.getLastName(), auxUser.getGroupName()) || !permissionHandler.inGroup(senderUser.getLastName(), auxGroup.getName()))) {
+				if (!isConsole && !isOpOverride && (!permissionHandler.inGroup(senderUser.getUUID(), auxUser.getGroupName()) || !permissionHandler.inGroup(senderUser.getUUID(), auxGroup.getName()))) {
 					sender.sendMessage(ChatColor.RED + "You can't modify a player involving a group that you don't inherit.");
 					return true;
 				}
@@ -1936,7 +1948,7 @@ public class GroupManager extends JavaPlugin {
 					return true;
 				}
 				// Validating permission
-				if (!isConsole && !isOpOverride && (senderGroup != null ? permissionHandler.inGroup(auxUser.getLastName(), senderGroup.getName()) : false)) {
+				if (!isConsole && !isOpOverride && (senderGroup != null ? permissionHandler.inGroup(auxUser.getUUID(), senderGroup.getName()) : false)) {
 					sender.sendMessage(ChatColor.RED + "You can't modify a player with same permissions as you, or higher.");
 					return true;
 				}
@@ -1944,7 +1956,7 @@ public class GroupManager extends JavaPlugin {
 					sender.sendMessage(ChatColor.RED + "The destination group can't be the same as yours, or higher.");
 					return true;
 				}
-				if (!isConsole && !isOpOverride && (!permissionHandler.inGroup(senderUser.getLastName(), auxUser.getGroupName()) || !permissionHandler.inGroup(senderUser.getLastName(), auxGroup.getName()))) {
+				if (!isConsole && !isOpOverride && (!permissionHandler.inGroup(senderUser.getUUID(), auxUser.getGroupName()) || !permissionHandler.inGroup(senderUser.getUUID(), auxGroup.getName()))) {
 					sender.sendMessage(ChatColor.RED + "You can't modify a player involving a group that you don't inherit.");
 					return true;
 				}
@@ -2196,22 +2208,22 @@ public class GroupManager extends JavaPlugin {
 		if (players.isEmpty()) {
 			// Check for an offline player (exact match).
 			if (Arrays.asList(this.getServer().getOfflinePlayers()).contains(Bukkit.getOfflinePlayer(playerName))) {
-				match.add(playerName);
+				match.add(Bukkit.getOfflinePlayer(playerName).getName()); //.getUniqueId().toString());
 			} else {
 				// look for partial matches
 				for (OfflinePlayer offline : this.getServer().getOfflinePlayers()) {
 					if (offline.getName().toLowerCase().startsWith(playerName.toLowerCase()))
-						match.add(offline.getName());
+						match.add(offline.getName()); //.getUniqueId().toString());
 				}
 			}
 
 		} else {
 			for (Player player : players) {
-				match.add(player.getName());
+				match.add(player.getUniqueId().toString());
 			}
 		}
 
-		if (match.isEmpty() || match == null) {
+		if (match.isEmpty()) {
 			sender.sendMessage(ChatColor.RED + "Player not found!");
 			return null;
 		} else if (match.size() > 1) {
