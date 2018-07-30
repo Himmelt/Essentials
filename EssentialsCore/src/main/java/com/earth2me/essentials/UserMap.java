@@ -12,7 +12,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 
-
 public class UserMap extends CacheLoader<String, User> implements IConf {
     private final transient com.earth2me.essentials.IEssentials ess;
     private final transient Cache<String, User> users;
@@ -31,17 +30,17 @@ public class UserMap extends CacheLoader<String, User> implements IConf {
     }
 
     private void loadAllUsersAsync(final IEssentials ess) {
-        ess.runTaskAsynchronously(new Runnable() {
-            @Override
-            public void run() {
-                synchronized (users) {
-                    final File userdir = new File(ess.getDataFolder(), "userdata");
-                    if (!userdir.exists()) {
-                        return;
-                    }
-                    keys.clear();
-                    users.invalidateAll();
-                    for (String string : userdir.list()) {
+        ess.runTaskAsynchronously(() -> {
+            synchronized (users) {
+                final File userDir = new File(ess.getDataFolder(), "userdata");
+                if (!userDir.exists()) {
+                    return;
+                }
+                keys.clear();
+                users.invalidateAll();
+                String[] list = userDir.list();
+                if (list != null && list.length >= 1) {
+                    for (String string : list) {
                         if (!string.endsWith(".yml")) {
                             continue;
                         }
@@ -52,8 +51,8 @@ public class UserMap extends CacheLoader<String, User> implements IConf {
                             //Ignore these users till they rejoin.
                         }
                     }
-                    uuidMap.loadAllUsers(names, history);
                 }
+                uuidMap.loadAllUsers(names, history);
             }
         });
     }

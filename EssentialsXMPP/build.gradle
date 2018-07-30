@@ -1,4 +1,4 @@
 dependencies {
-    compile project(':Essentials')
+    compile project(':EssentialsCore')
     compile 'org.igniterealtime.smack:smack:3.2.1'
 }

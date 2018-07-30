@@ -1,9 +1,12 @@
 subprojects {
-
     apply plugin: 'java'
-
-    project.buildDir = new File(project.rootDir, 'build')
-
+    sourceCompatibility = targetCompatibility = 1.8
+    compileJava {
+        sourceCompatibility = targetCompatibility = 1.8
+    }
+    jar {
+        destinationDir = new File(rootDir, "build")
+    }
     repositories {
         jcenter()
         maven {
@@ -19,36 +22,9 @@ subprojects {
             url = 'http://projectlombok.org/mavenrepo'
         }
     }
-
     dependencies {
+        compile 'org.spigotmc:spigot-api:1.8-R0.1-SNAPSHOT'
+        compile 'org.projectlombok:lombok:1.12.2'
+        compile 'org.yaml:snakeyaml:1.21'
     }
-}
-
-apply plugin: 'java'
-
-sourceCompatibility = targetCompatibility = 1.8
-compileJava {
-    sourceCompatibility = targetCompatibility = 1.8
-}
-
-repositories {
-    jcenter()
-    maven {
-        name = 'ess-repo'
-        url = 'http://repo.ess3.net/content/groups/public'
-    }
-    maven {
-        name = 'spigot'
-        url = 'https://hub.spigotmc.org/nexus/content/groups/public/'
-    }
-    maven {
-        name = 'lombok'
-        url = 'http://projectlombok.org/mavenrepo'
-    }
-}
-
-dependencies {
-    compile 'org.spigotmc:spigot-api:1.8-R0.1-SNAPSHOT'
-    compile 'org.projectlombok:lombok:1.12.2'
-    compile 'org.yaml:snakeyaml:1.21'
 }

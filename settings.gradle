@@ -1,10 +1,10 @@
-rootProject.name = 'EssentialsParent'
+rootProject.name = 'Essentials'
 
-include 'Essentials'
+include 'GroupManager'
+include 'EssentialsCore'
 include 'EssentialsAntiBuild'
 include 'EssentialsChat'
 include 'EssentialsGeoIP'
-include 'EssentialsGroupManager'
 include 'EssentialsProtect'
 include 'EssentialsSpawn'
 include 'EssentialsXMPP'

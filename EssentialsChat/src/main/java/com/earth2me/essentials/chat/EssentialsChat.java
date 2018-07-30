@@ -13,7 +13,6 @@ import java.util.logging.Logger;
 
 import static com.earth2me.essentials.I18n.tl;
 
-
 public class EssentialsChat extends JavaPlugin {
     private static final Logger LOGGER = Logger.getLogger("Minecraft");
 
