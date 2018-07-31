@@ -7,7 +7,6 @@ import com.earth2me.essentials.UserMap;
 import com.earth2me.essentials.metrics.Metrics;
 import com.earth2me.essentials.utils.DateUtil;
 import com.earth2me.essentials.utils.NumberUtil;
-import com.google.common.base.Charsets;
 import org.bukkit.Material;
 import org.bukkit.Server;
 import org.bukkit.Sound;
@@ -15,6 +14,7 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -304,10 +304,10 @@ public class Commandessentials extends EssentialsCommand {
             sender.sendMessage("Essentials config: " + essUUID.toString());
         }
 
-        UUID npcuuid = UUID.nameUUIDFromBytes(("NPC:" + name).getBytes(Charsets.UTF_8));
+        UUID npcuuid = UUID.nameUUIDFromBytes(("NPC:" + name).getBytes(StandardCharsets.UTF_8));
         sender.sendMessage("NPC UUID: " + npcuuid.toString());
 
-        UUID offlineuuid = UUID.nameUUIDFromBytes(("OfflinePlayer:" + name).getBytes(Charsets.UTF_8));
+        UUID offlineuuid = UUID.nameUUIDFromBytes(("OfflinePlayer:" + name).getBytes(StandardCharsets.UTF_8));
         sender.sendMessage("Offline Mode UUID: " + offlineuuid.toString());
     }
 }

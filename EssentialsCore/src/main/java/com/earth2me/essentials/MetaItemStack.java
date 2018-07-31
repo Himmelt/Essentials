@@ -5,7 +5,6 @@ import com.earth2me.essentials.textreader.BookPager;
 import com.earth2me.essentials.textreader.IText;
 import com.earth2me.essentials.utils.FormatUtil;
 import com.earth2me.essentials.utils.NumberUtil;
-import com.google.common.base.Joiner;
 import org.bukkit.Color;
 import org.bukkit.DyeColor;
 import org.bukkit.FireworkEffect;
@@ -107,7 +106,7 @@ public class MetaItemStack {
     public void parseStringMeta(final CommandSource sender, final boolean allowUnsafe, String[] string, int fromArg, final com.earth2me.essentials.IEssentials ess) throws Exception {
         if (string[fromArg].startsWith("{") && hasMetaPermission(sender, "vanilla", false, true, ess)) {
             try {
-                stack = ess.getServer().getUnsafe().modifyItemStack(stack, Joiner.on(' ').join(Arrays.asList(string).subList(fromArg, string.length)));
+                stack = ess.getServer().getUnsafe().modifyItemStack(stack, String.join(" ", Arrays.asList(string).subList(fromArg, string.length)));
             } catch (NullPointerException npe) {
                 if (ess.getSettings().isDebug()) {
                     ess.getLogger().log(Level.INFO, "Itemstack is invalid", npe);

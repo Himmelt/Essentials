@@ -5,7 +5,6 @@ import com.earth2me.essentials.craftbukkit.FakeWorld;
 import com.earth2me.essentials.settings.Spawns;
 import com.earth2me.essentials.storage.YamlStorageWriter;
 import com.earth2me.essentials.utils.StringUtil;
-import com.google.common.base.Charsets;
 import org.bukkit.BanList;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -13,6 +12,7 @@ import org.bukkit.World;
 
 import java.io.*;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.util.*;
@@ -493,7 +493,7 @@ public class EssentialsUpgrade {
                         break;
                     } catch (Exception ex2) {
                         if (conf.getBoolean("npc", false)) {
-                            uuid = UUID.nameUUIDFromBytes(("NPC:" + name).getBytes(Charsets.UTF_8));
+                            uuid = UUID.nameUUIDFromBytes(("NPC:" + name).getBytes(StandardCharsets.UTF_8));
                             break;
                         }
 

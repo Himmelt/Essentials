@@ -1,6 +1,5 @@
 package com.earth2me.essentials;
 
-import com.google.common.io.Files;
 import net.ess3.api.InvalidWorldException;
 import org.bukkit.*;
 import org.bukkit.OfflinePlayer;
@@ -19,6 +18,7 @@ import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CoderResult;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -30,7 +30,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static com.earth2me.essentials.I18n.tl;
-
 
 public class EssentialsConf extends YamlConfiguration {
     protected static final Logger LOGGER = Logger.getLogger("Essentials");
@@ -302,8 +301,7 @@ public class EssentialsConf extends YamlConfiguration {
                     return;
                 }
                 try {
-                    Files.createParentDirs(configFile);
-
+                    Files.createDirectories(configFile.toPath().getParent());
                     if (!configFile.exists()) {
                         try {
                             LOGGER.log(Level.INFO, tl("creatingEmptyConfig", configFile.toString()));
@@ -317,17 +315,10 @@ public class EssentialsConf extends YamlConfiguration {
                         }
                     }
 
-                    final FileOutputStream fos = new FileOutputStream(configFile);
-                    try {
-                        final OutputStreamWriter writer = new OutputStreamWriter(fos, UTF8);
-
-                        try {
+                    try (FileOutputStream fos = new FileOutputStream(configFile)) {
+                        try (OutputStreamWriter writer = new OutputStreamWriter(fos, UTF8)) {
                             writer.write(data);
-                        } finally {
-                            writer.close();
                         }
-                    } finally {
-                        fos.close();
                     }
                 } catch (IOException e) {
                     LOGGER.log(Level.SEVERE, e.getMessage(), e);

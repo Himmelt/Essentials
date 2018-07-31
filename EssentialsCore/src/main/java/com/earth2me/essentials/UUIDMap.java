@@ -1,9 +1,10 @@
 package com.earth2me.essentials;
 
-import com.google.common.io.Files;
 import org.bukkit.Bukkit;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
@@ -11,7 +12,6 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
-
 
 public class UUIDMap {
     private final transient IEssentials ess;
@@ -44,8 +44,7 @@ public class UUIDMap {
                 names.clear();
                 history.clear();
 
-                final BufferedReader reader = new BufferedReader(new FileReader(userList));
-                try {
+                try (BufferedReader reader = new BufferedReader(new FileReader(userList))) {
                     while (true) {
                         final String line = reader.readLine();
                         if (line == null) {
@@ -69,8 +68,6 @@ public class UUIDMap {
                             }
                         }
                     }
-                } finally {
-                    reader.close();
                 }
             }
         } catch (IOException ex) {
@@ -92,9 +89,7 @@ public class UUIDMap {
             if (future != null) {
                 future.get();
             }
-        } catch (InterruptedException ex) {
-            ess.getLogger().log(Level.SEVERE, ex.getMessage(), ex);
-        } catch (ExecutionException ex) {
+        } catch (InterruptedException | ExecutionException ex) {
             ess.getLogger().log(Level.SEVERE, ex.getMessage(), ex);
         }
     }
@@ -105,10 +100,8 @@ public class UUIDMap {
             return null;
         }
         pendingDiskWrites.incrementAndGet();
-        Future<?> future = EXECUTOR_SERVICE.submit(new WriteRunner(ess.getDataFolder(), userList, names, pendingDiskWrites));
-        return future;
+        return EXECUTOR_SERVICE.submit(new WriteRunner(ess.getDataFolder(), userList, names, pendingDiskWrites));
     }
-
 
     private static class WriteRunner implements Runnable {
         private final File location;
@@ -143,11 +136,11 @@ public class UUIDMap {
                     }
 
                     bWriter.close();
-                    Files.move(configFile, endFile);
+                    Files.move(configFile.toPath(), endFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
                 } catch (IOException ex) {
                     try {
                         if (configFile != null && configFile.exists()) {
-                            Files.move(configFile, new File(endFile.getParentFile(), "usermap.bak.csv"));
+                            Files.move(configFile.toPath(), new File(endFile.getParentFile(), "usermap.bak.csv").toPath(), StandardCopyOption.REPLACE_EXISTING);
                         }
                     } catch (Exception ex2) {
                         Bukkit.getLogger().log(Level.SEVERE, ex2.getMessage(), ex2);

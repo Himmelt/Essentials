@@ -1,20 +1,17 @@
 package com.earth2me.essentials;
 
 import com.earth2me.essentials.utils.StringUtil;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.util.concurrent.UncheckedExecutionException;
 import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 
-public class UserMap extends CacheLoader<String, User> implements IConf {
+public class UserMap implements IConf {
     private final transient com.earth2me.essentials.IEssentials ess;
-    private final transient Cache<String, User> users;
+    private final transient ConcurrentHashMap<String, User> users = new ConcurrentHashMap<>();
     private final transient ConcurrentSkipListSet<UUID> keys = new ConcurrentSkipListSet<UUID>();
     private final transient ConcurrentSkipListMap<String, UUID> names = new ConcurrentSkipListMap<String, UUID>();
     private final transient ConcurrentSkipListMap<UUID, ArrayList<String>> history = new ConcurrentSkipListMap<UUID, ArrayList<String>>();
@@ -26,7 +23,7 @@ public class UserMap extends CacheLoader<String, User> implements IConf {
         uuidMap = new UUIDMap(ess);
         //RemovalListener<UUID, User> remListener = new UserMapRemovalListener();
         //users = CacheBuilder.newBuilder().maximumSize(ess.getSettings().getMaxUserCacheCount()).softValues().removalListener(remListener).build(this);
-        users = CacheBuilder.newBuilder().maximumSize(ess.getSettings().getMaxUserCacheCount()).softValues().build(this);
+        //users = CacheBuilder.newBuilder().maximumSize(ess.getSettings().getMaxUserCacheCount()).softValues().build(this);
     }
 
     private void loadAllUsersAsync(final IEssentials ess) {
@@ -37,7 +34,8 @@ public class UserMap extends CacheLoader<String, User> implements IConf {
                     return;
                 }
                 keys.clear();
-                users.invalidateAll();
+                //users.invalidateAll();
+                users.clear();
                 String[] list = userDir.list();
                 if (list != null && list.length >= 1) {
                     for (String string : list) {
@@ -62,32 +60,24 @@ public class UserMap extends CacheLoader<String, User> implements IConf {
     }
 
     public User getUser(final String name) {
-        try {
-            final String sanitizedName = StringUtil.safeString(name);
-            if (names.containsKey(sanitizedName)) {
-                final UUID uuid = names.get(sanitizedName);
-                return getUser(uuid);
-            }
-
-            final File userFile = getUserFileFromString(sanitizedName);
-            if (userFile.exists()) {
-                ess.getLogger().info("Importing user " + name + " to usermap.");
-                User user = new User(new OfflinePlayer(sanitizedName, ess.getServer()), ess);
-                trackUUID(user.getBase().getUniqueId(), user.getName(), true);
-                return user;
-            }
-            return null;
-        } catch (UncheckedExecutionException ex) {
-            return null;
+        final String sanitizedName = StringUtil.safeString(name);
+        if (names.containsKey(sanitizedName)) {
+            final UUID uuid = names.get(sanitizedName);
+            return getUser(uuid);
         }
+
+        final File userFile = getUserFileFromString(sanitizedName);
+        if (userFile.exists()) {
+            ess.getLogger().info("Importing user " + name + " to usermap.");
+            User user = new User(new OfflinePlayer(sanitizedName, ess.getServer()), ess);
+            trackUUID(user.getBase().getUniqueId(), user.getName(), true);
+            return user;
+        }
+        return null;
     }
 
     public User getUser(final UUID uuid) {
-        try {
-            return users.getIfPresent(uuid.toString());
-        } catch (UncheckedExecutionException ex) {
-            return null;
-        }
+        return users.get(uuid.toString());
     }
 
     public void trackUUID(final UUID uuid, final String name, boolean replace) {
@@ -113,7 +103,6 @@ public class UserMap extends CacheLoader<String, User> implements IConf {
         }
     }
 
-    @Override
     public User load(final String stringUUID) throws Exception {
         UUID uuid = UUID.fromString(stringUUID);
         Player player = ess.getServer().getPlayer(uuid);
@@ -143,7 +132,8 @@ public class UserMap extends CacheLoader<String, User> implements IConf {
     }
 
     public void invalidateAll() {
-        users.invalidateAll();
+        users.clear();
+        //users.invalidateAll();
     }
 
     public void removeUser(final String name) {
@@ -154,7 +144,8 @@ public class UserMap extends CacheLoader<String, User> implements IConf {
         UUID uuid = names.get(name);
         if (uuid != null) {
             keys.remove(uuid);
-            users.invalidate(uuid);
+            users.remove(uuid.toString());
+            //users.invalidate(uuid);
         }
         names.remove(name);
         names.remove(StringUtil.safeString(name));
@@ -193,16 +184,5 @@ public class UserMap extends CacheLoader<String, User> implements IConf {
         final File userFolder = new File(ess.getDataFolder(), "userdata");
         return new File(userFolder, StringUtil.sanitizeFileName(name) + ".yml");
     }
-//	class UserMapRemovalListener implements RemovalListener
-//	{
-//		@Override
-//		public void onRemoval(final RemovalNotification notification)
-//		{
-//			Object value = notification.getValue();
-//			if (value != null)
-//			{
-//				((User)value).cleanup();
-//			}
-//		}
-//	}
+
 }

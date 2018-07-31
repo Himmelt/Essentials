@@ -30,9 +30,6 @@ import com.earth2me.essentials.textreader.IText;
 import com.earth2me.essentials.textreader.KeywordReplacer;
 import com.earth2me.essentials.textreader.SimpleTextInput;
 import com.earth2me.essentials.utils.DateUtil;
-import com.google.common.base.Function;
-import com.google.common.base.Throwables;
-import com.google.common.collect.Iterables;
 import net.ess3.api.Economy;
 import net.ess3.api.IItemDb;
 import net.ess3.api.IJails;
@@ -73,7 +70,6 @@ import java.util.regex.Pattern;
 
 import static com.earth2me.essentials.I18n.tl;
 
-
 public class Essentials extends JavaPlugin implements net.ess3.api.IEssentials {
     public static final int BUKKIT_VERSION = 3050;
     private static final Logger LOGGER = Logger.getLogger("Essentials");
@@ -94,6 +90,7 @@ public class Essentials extends JavaPlugin implements net.ess3.api.IEssentials {
     private transient Metrics metrics;
     private transient EssentialsTimer timer;
     private final transient List<String> vanishedPlayers = new ArrayList<String>();
+    private final transient ArrayList<User> onlineUsers = new ArrayList<>();
     private transient Method oldGetOnlinePlayers;
 
     public Essentials() {
@@ -743,12 +740,13 @@ public class Essentials extends JavaPlugin implements net.ess3.api.IEssentials {
     @Override
     public Collection<Player> getOnlinePlayers() {
         try {
-            return (Collection<Player>) getServer().getOnlinePlayers(); // Needed for sanity here, the Bukkit API is a bit broken in the sense it only allows subclasses of Player to this list
+            // Needed for sanity here, the Bukkit API is a bit broken in the sense it only allows subclasses of Player to this list
+            return new ArrayList<>(getServer().getOnlinePlayers());
         } catch (NoSuchMethodError ex) {
             try {
                 return Arrays.asList((Player[]) oldGetOnlinePlayers.invoke(getServer()));
             } catch (InvocationTargetException ex1) {
-                throw Throwables.propagate(ex.getCause());
+                throw new RuntimeException(ex.getCause());
             } catch (IllegalAccessException ex1) {
                 throw new RuntimeException("Error invoking oldGetOnlinePlayers", ex1);
             }
@@ -757,13 +755,11 @@ public class Essentials extends JavaPlugin implements net.ess3.api.IEssentials {
 
     @Override
     public Iterable<User> getOnlineUsers() {
-        return Iterables.transform(getOnlinePlayers(), new Function<Player, User>() {
-
-            @Override
-            public User apply(Player player) {
-                return getUser(player);
-            }
-        });
+        onlineUsers.clear();
+        for (Player player : getOnlinePlayers()) {
+            onlineUsers.add(getUser(player));
+        }
+        return onlineUsers;
     }
 
     private static class EssentialsWorldListener implements Listener, Runnable {

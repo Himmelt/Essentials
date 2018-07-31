@@ -1,15 +1,15 @@
 package com.earth2me.essentials;
 
-import com.google.common.base.Charsets;
-import com.google.common.io.Files;
 import org.bukkit.Bukkit;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.logging.Level;
-
 
 public class EssentialsUserConf extends EssentialsConf {
     public final String username;
@@ -31,7 +31,7 @@ public class EssentialsUserConf extends EssentialsConf {
     public void convertLegacyFile() {
         final File file = new File(configFile.getParentFile(), username + ".yml");
         try {
-            Files.move(file, new File(configFile.getParentFile(), uuid + ".yml"));
+            Files.move(file.toPath(), new File(configFile.getParentFile(), uuid + ".yml").toPath(), StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException ex) {
             Bukkit.getLogger().log(Level.WARNING, "Failed to migrate user: " + username, ex);
         }
@@ -40,7 +40,7 @@ public class EssentialsUserConf extends EssentialsConf {
     }
 
     private File getAltFile() {
-        final UUID fn = UUID.nameUUIDFromBytes(("OfflinePlayer:" + username.toLowerCase(Locale.ENGLISH)).getBytes(Charsets.UTF_8));
+        final UUID fn = UUID.nameUUIDFromBytes(("OfflinePlayer:" + username.toLowerCase(Locale.ENGLISH)).getBytes(StandardCharsets.UTF_8));
         return new File(configFile.getParentFile(), fn.toString() + ".yml");
     }
 
@@ -55,7 +55,7 @@ public class EssentialsUserConf extends EssentialsConf {
     @Override
     public void convertAltFile() {
         try {
-            Files.move(getAltFile(), new File(configFile.getParentFile(), uuid + ".yml"));
+            Files.move(getAltFile().toPath(), new File(configFile.getParentFile(), uuid + ".yml").toPath(), StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException ex) {
             Bukkit.getLogger().log(Level.WARNING, "Failed to migrate user: " + username, ex);
         }

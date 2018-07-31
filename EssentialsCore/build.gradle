@@ -1,8 +1,6 @@
 archivesBaseName = 'Essentials'
 dependencies {
     compile project(':GroupManager')
-    compile 'org.spigotmc:spigot-api:1.8-R0.1-SNAPSHOT'
-    compile 'org.projectlombok:lombok:1.12.2'
     compile files('../lib/BOSEconomy.jar')
     compile files('../lib/bPermissions-2.12.jar')
     compile files('../lib/iCo5.jar')
