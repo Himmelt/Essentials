@@ -15,4 +15,3 @@ users:
     subgroups: []
     permissions:
     - groupmanager.noofflineperms
-

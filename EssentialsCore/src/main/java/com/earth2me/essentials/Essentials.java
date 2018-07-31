@@ -224,6 +224,7 @@ public class Essentials extends JavaPlugin implements net.ess3.api.IEssentials {
                 LOGGER.log(Level.INFO, "Essentials load {0}", timeroutput);
             }
         } catch (NumberFormatException ex) {
+            ex.printStackTrace();
             handleCrash(ex);
         } catch (Error ex) {
             handleCrash(ex);

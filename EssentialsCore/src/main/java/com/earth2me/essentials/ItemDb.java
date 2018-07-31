@@ -12,13 +12,13 @@ import java.util.regex.Pattern;
 
 import static com.earth2me.essentials.I18n.tl;
 
-
 public class ItemDb implements IConf, net.ess3.api.IItemDb {
+
     private final transient com.earth2me.essentials.IEssentials ess;
-    private final transient Map<String, Integer> items = new HashMap<String, Integer>();
-    private final transient Map<ItemData, List<String>> names = new HashMap<ItemData, List<String>>();
-    private final transient Map<ItemData, String> primaryName = new HashMap<ItemData, String>();
-    private final transient Map<String, Short> durabilities = new HashMap<String, Short>();
+    private final transient Map<String, Integer> items = new HashMap<>();
+    private final transient Map<ItemData, List<String>> names = new HashMap<>();
+    private final transient Map<ItemData, String> primaryName = new HashMap<>();
+    private final transient Map<String, Short> durabilities = new HashMap<>();
     private final transient ManagedFile file;
     private final transient Pattern splitPattern = Pattern.compile("((.*)[:+',;.](\\d+))");
 
@@ -46,15 +46,19 @@ public class ItemDb implements IConf, net.ess3.api.IItemDb {
                 continue;
             }
 
-            final String[] parts = line.split("[^a-z0-9]");
+            final String[] parts = line.split(",");
             if (parts.length < 2) {
                 continue;
             }
-
-            final int numeric = Integer.parseInt(parts[1]);
-            final short data = parts.length > 2 && !parts[2].equals("0") ? Short.parseShort(parts[2]) : 0;
-            String itemName = parts[0].toLowerCase(Locale.ENGLISH);
-
+            final int numeric;
+            final short data;
+            try {
+                numeric = Integer.parseInt(parts[1].trim());
+                data = parts.length > 2 && !parts[2].trim().equals("0") ? Short.parseShort(parts[2].trim()) : 0;
+            } catch (Throwable ignored) {
+                continue;
+            }
+            String itemName = parts[0].trim().toLowerCase(Locale.ENGLISH);
             durabilities.put(itemName, data);
             items.put(itemName, numeric);
 
@@ -62,9 +66,9 @@ public class ItemDb implements IConf, net.ess3.api.IItemDb {
             if (names.containsKey(itemData)) {
                 List<String> nameList = names.get(itemData);
                 nameList.add(itemName);
-                Collections.sort(nameList, new LengthCompare());
+                nameList.sort(new LengthCompare());
             } else {
-                List<String> nameList = new ArrayList<String>();
+                List<String> nameList = new ArrayList<>();
                 nameList.add(itemName);
                 names.put(itemData, nameList);
                 primaryName.put(itemData, itemName);
@@ -73,16 +77,16 @@ public class ItemDb implements IConf, net.ess3.api.IItemDb {
     }
 
     @Override
-    public ItemStack get(final String id, final int quantity) throws Exception {
-        final ItemStack retval = get(id.toLowerCase(Locale.ENGLISH));
-        retval.setAmount(quantity);
-        return retval;
+    public ItemStack get(final String id, final int amount) throws Exception {
+        final ItemStack itemStack = get(id.toLowerCase(Locale.ENGLISH));
+        itemStack.setAmount(amount);
+        return itemStack;
     }
 
     @Override
     public ItemStack get(final String id) throws Exception {
         int itemid = 0;
-        String itemname = null;
+        String itemname;
         short metaData = 0;
         Matcher parts = splitPattern.matcher(id);
         if (parts.matches()) {
@@ -135,7 +139,7 @@ public class ItemDb implements IConf, net.ess3.api.IItemDb {
 
     @Override
     public List<ItemStack> getMatching(User user, String[] args) throws Exception {
-        List<ItemStack> is = new ArrayList<ItemStack>();
+        List<ItemStack> is = new ArrayList<>();
 
         if (args.length < 1) {
             is.add(user.getBase().getItemInHand());
@@ -198,7 +202,6 @@ public class ItemDb implements IConf, net.ess3.api.IItemDb {
         return name;
     }
 
-
     static class ItemData {
         final private int itemNo;
         final private short itemData;
@@ -235,8 +238,7 @@ public class ItemDb implements IConf, net.ess3.api.IItemDb {
         }
     }
 
-
-    class LengthCompare implements java.util.Comparator<String> {
+    class LengthCompare implements Comparator<String> {
         public LengthCompare() {
             super();
         }
@@ -246,4 +248,5 @@ public class ItemDb implements IConf, net.ess3.api.IItemDb {
             return s1.length() - s2.length();
         }
     }
+
 }
