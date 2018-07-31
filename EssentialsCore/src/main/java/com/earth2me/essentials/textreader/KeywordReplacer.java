@@ -39,7 +39,7 @@ public class KeywordReplacer implements IText {
 
     public KeywordReplacer(final IText input, final CommandSource sender, final com.earth2me.essentials.IEssentials ess) {
         this.input = input;
-        this.replaced = new ArrayList<String>(this.input.getLines().size());
+        this.replaced = new ArrayList<>(this.input.getLines().size());
         this.ess = ess;
         this.includePrivate = true;
         replaceKeywords(sender);
@@ -349,5 +349,5 @@ enum KeywordType {
 enum KeywordCachable {
     CACHEABLE, // This keyword can be cached as a string
     SUBVALUE, // This keyword can be cached as a map
-    NOTCACHEABLE; // This keyword should never be cached
+    NOTCACHEABLE // This keyword should never be cached
 }

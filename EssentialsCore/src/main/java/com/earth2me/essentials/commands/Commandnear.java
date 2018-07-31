@@ -2,6 +2,7 @@ package com.earth2me.essentials.commands;
 
 import com.earth2me.essentials.CommandSource;
 import com.earth2me.essentials.User;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Server;
 import org.bukkit.World;
@@ -91,7 +92,9 @@ public class Commandnear extends EssentialsCommand {
                     if (output.length() > 0) {
                         output.append(", ");
                     }
-                    output.append(player.getDisplayName()).append("§f(§4").append((long) Math.sqrt(delta)).append("m§f)");
+                    output.append(player.getDisplayName())
+                            .append(ChatColor.WHITE).append('(').append(ChatColor.DARK_RED)
+                            .append((long) Math.sqrt(delta)).append('m').append(ChatColor.WHITE).append(')');
                 }
             }
         }

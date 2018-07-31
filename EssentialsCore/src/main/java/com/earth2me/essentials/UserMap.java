@@ -109,6 +109,7 @@ public class UserMap implements IConf {
         if (player != null) {
             final User user = new User(player, ess);
             trackUUID(uuid, user.getName(), true);
+            users.put(player.getUniqueId().toString(), user);
             return user;
         }
 
@@ -119,10 +120,18 @@ public class UserMap implements IConf {
             final User user = new User(player, ess);
             ((OfflinePlayer) player).setName(user.getLastAccountName());
             trackUUID(uuid, user.getName(), false);
+            users.put(player.getUniqueId().toString(), user);
             return user;
         }
 
         throw new Exception("User not found!");
+    }
+
+    public User load(final Player player) {
+        final User user = new User(player, ess);
+        trackUUID(player.getUniqueId(), user.getName(), true);
+        users.put(player.getUniqueId().toString(), user);
+        return user;
     }
 
     @Override

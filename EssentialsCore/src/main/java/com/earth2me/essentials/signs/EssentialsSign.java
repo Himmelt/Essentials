@@ -6,6 +6,7 @@ import net.ess3.api.MaxMoneyException;
 import net.ess3.api.events.SignBreakEvent;
 import net.ess3.api.events.SignCreateEvent;
 import net.ess3.api.events.SignInteractEvent;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -54,9 +55,7 @@ public class EssentialsSign {
                 sign.setLine(0, getSuccessName());
             }
             return ret;
-        } catch (ChargeException ex) {
-            showError(ess, user.getSource(), ex, signName);
-        } catch (SignException ex) {
+        } catch (ChargeException | SignException ex) {
             showError(ess, user.getSource(), ex, signName);
         }
         // Return true, so the player sees the wrong sign.
@@ -224,7 +223,7 @@ public class EssentialsSign {
     }
 
     public static boolean isValidSign(final ISign sign) {
-        return sign.getLine(0).matches("§1\\[.*\\]");
+        return sign.getLine(0).matches(ChatColor.DARK_BLUE + "\\[.*]");
     }
 
     protected boolean onBlockPlace(final Block block, final User player, final String username, final com.earth2me.essentials.IEssentials ess) throws SignException, ChargeException {
@@ -488,12 +487,12 @@ public class EssentialsSign {
     }
 
     public interface ISign {
-        public String getLine(final int index);
+        String getLine(final int index);
 
-        public void setLine(final int index, final String text);
+        void setLine(final int index, final String text);
 
-        public Block getBlock();
+        Block getBlock();
 
-        public void updateSign();
+        void updateSign();
     }
 }

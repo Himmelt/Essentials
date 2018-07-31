@@ -7,6 +7,7 @@ import com.earth2me.essentials.Trade.OverflowType;
 import com.earth2me.essentials.User;
 import com.earth2me.essentials.utils.FormatUtil;
 import net.ess3.api.MaxMoneyException;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -33,12 +34,12 @@ public class SignProtection extends EssentialsSign {
 
     @Override
     protected boolean onSignCreate(final ISign sign, final User player, final String username, final com.earth2me.essentials.IEssentials ess) throws SignException, ChargeException {
-        sign.setLine(3, "§4" + username);
+        sign.setLine(3, ChatColor.DARK_RED + username);
         if (hasAdjacentBlock(sign.getBlock())) {
             final SignProtectionState state = isBlockProtected(sign.getBlock(), player, username, true);
             if (state == SignProtectionState.NOSIGN || state == SignProtectionState.OWNER
                     || player.isAuthorized("essentials.signs.protection.override")) {
-                sign.setLine(3, "§1" + username);
+                sign.setLine(3, ChatColor.DARK_BLUE + username);
                 return true;
             }
         }
@@ -47,7 +48,7 @@ public class SignProtection extends EssentialsSign {
     }
 
     @Override
-    protected boolean onSignBreak(final ISign sign, final User player, final String username, final com.earth2me.essentials.IEssentials ess) throws SignException {
+    protected boolean onSignBreak(final ISign sign, final User player, final String username, final com.earth2me.essentials.IEssentials ess) {
         final SignProtectionState state = checkProtectionSign(sign, player, username);
         return state == SignProtectionState.OWNER;
     }
@@ -171,7 +172,7 @@ public class SignProtection extends EssentialsSign {
         for (Block b : faces) {
             if (b.getType() == Material.SIGN_POST || b.getType() == Material.WALL_SIGN) {
                 final Sign sign = (Sign) b.getState();
-                if (sign.getLine(0).equalsIgnoreCase("§1[Protection]")) {
+                if (sign.getLine(0).equalsIgnoreCase(ChatColor.DARK_BLUE + "[Protection]")) {
                     return true;
                 }
             }
@@ -181,7 +182,7 @@ public class SignProtection extends EssentialsSign {
                 for (Block a : faceChest) {
                     if (a.getType() == Material.SIGN_POST || a.getType() == Material.WALL_SIGN) {
                         final Sign sign = (Sign) a.getState();
-                        if (sign.getLine(0).equalsIgnoreCase("§1[Protection]")) {
+                        if (sign.getLine(0).equalsIgnoreCase(ChatColor.DARK_BLUE + "[Protection]")) {
                             return true;
                         }
                     }
@@ -202,7 +203,7 @@ public class SignProtection extends EssentialsSign {
     }
 
     @Override
-    protected boolean onBlockPlace(final Block block, final User player, final String username, final com.earth2me.essentials.IEssentials ess) throws SignException {
+    protected boolean onBlockPlace(final Block block, final User player, final String username, final com.earth2me.essentials.IEssentials ess) {
         for (Block adjBlock : getAdjacentBlocks(block)) {
             final SignProtectionState state = isBlockProtected(adjBlock, player, username, true);
 
@@ -217,7 +218,7 @@ public class SignProtection extends EssentialsSign {
     }
 
     @Override
-    protected boolean onBlockInteract(final Block block, final User player, final String username, final com.earth2me.essentials.IEssentials ess) throws SignException {
+    protected boolean onBlockInteract(final Block block, final User player, final String username, final com.earth2me.essentials.IEssentials ess) {
         final SignProtectionState state = isBlockProtected(block, player, username, false);
 
         if (state == SignProtectionState.OWNER || state == SignProtectionState.NOSIGN || state == SignProtectionState.ALLOWED) {
@@ -235,7 +236,7 @@ public class SignProtection extends EssentialsSign {
     }
 
     @Override
-    protected boolean onBlockBreak(final Block block, final User player, final String username, final com.earth2me.essentials.IEssentials ess) throws SignException, MaxMoneyException {
+    protected boolean onBlockBreak(final Block block, final User player, final String username, final com.earth2me.essentials.IEssentials ess) throws MaxMoneyException {
         final SignProtectionState state = isBlockProtected(block, player, username, false);
 
         if (state == SignProtectionState.OWNER || state == SignProtectionState.NOSIGN) {

@@ -2,6 +2,7 @@ package com.earth2me.essentials.commands;
 
 import com.earth2me.essentials.User;
 import com.earth2me.essentials.craftbukkit.InventoryWorkaround;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.Server;
 import org.bukkit.inventory.ItemStack;
@@ -45,7 +46,7 @@ public class Commandskull extends EssentialsCommand {
             throw new Exception(tl("noPermissionSkull"));
         }
 
-        metaSkull.setDisplayName("§fSkull of " + owner);
+        metaSkull.setDisplayName(ChatColor.WHITE + "Skull of " + owner);
         metaSkull.setOwner(owner);
 
         itemSkull.setItemMeta(metaSkull);

@@ -4,6 +4,7 @@ import com.earth2me.essentials.ChargeException;
 import com.earth2me.essentials.Trade;
 import com.earth2me.essentials.User;
 import net.ess3.api.IEssentials;
+import org.bukkit.ChatColor;
 
 import static com.earth2me.essentials.I18n.tl;
 
@@ -21,14 +22,14 @@ public class SignWeather extends EssentialsSign {
         validateTrade(sign, 2, ess);
         final String timeString = sign.getLine(1);
         if ("Sun".equalsIgnoreCase(timeString)) {
-            sign.setLine(1, "§2Sun");
+            sign.setLine(1, ChatColor.DARK_GREEN + "Sun");
             return true;
         }
         if ("Storm".equalsIgnoreCase(timeString)) {
-            sign.setLine(1, "§2Storm");
+            sign.setLine(1, ChatColor.DARK_GREEN + "Storm");
             return true;
         }
-        sign.setLine(1, "§c<sun|storm>");
+        sign.setLine(1, ChatColor.RED + "<sun|storm>");
         throw new SignException(tl("onlySunStorm"));
     }
 
@@ -40,13 +41,13 @@ public class SignWeather extends EssentialsSign {
         final Trade charge = getTrade(sign, 2, ess);
         charge.isAffordableFor(player);
         final String weatherString = sign.getLine(1);
-        if ("§2Sun".equalsIgnoreCase(weatherString)) {
+        if ((ChatColor.DARK_GREEN + "Sun").equalsIgnoreCase(weatherString)) {
             player.getWorld().setStorm(false);
             charge.charge(player);
             Trade.log("Sign", "WeatherSun", "Interact", username, null, username, charge, sign.getBlock().getLocation(), ess);
             return true;
         }
-        if ("§2Storm".equalsIgnoreCase(weatherString)) {
+        if ((ChatColor.DARK_GREEN + "Storm").equalsIgnoreCase(weatherString)) {
             player.getWorld().setStorm(true);
             charge.charge(player);
             Trade.log("Sign", "WeatherStorm", "Interact", username, null, username, charge, sign.getBlock().getLocation(), ess);

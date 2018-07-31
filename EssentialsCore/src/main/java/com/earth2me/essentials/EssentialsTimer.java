@@ -8,9 +8,9 @@ import java.util.logging.Level;
 
 public class EssentialsTimer implements Runnable {
     private final transient com.earth2me.essentials.IEssentials ess;
-    private final transient Set<UUID> onlineUsers = new HashSet<UUID>();
+    private final transient Set<UUID> onlineUsers = new HashSet<>();
     private transient long lastPoll = System.nanoTime();
-    private final LinkedList<Double> history = new LinkedList<Double>();
+    private final LinkedList<Double> history = new LinkedList<>();
     private int skip1 = 0;
     private int skip2 = 0;
     private final long maxTime = 10 * 1000000;

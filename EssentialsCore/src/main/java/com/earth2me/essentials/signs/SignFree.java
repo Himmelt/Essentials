@@ -3,6 +3,7 @@ package com.earth2me.essentials.signs;
 import com.earth2me.essentials.Trade;
 import com.earth2me.essentials.User;
 import net.ess3.api.IEssentials;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -25,7 +26,7 @@ public class SignFree extends EssentialsSign {
             item = getItemMeta(item, sign.getLine(2), ess);
             item = getItemMeta(item, sign.getLine(3), ess);
         } catch (SignException ex) {
-            sign.setLine(1, "§c<item>");
+            sign.setLine(1, ChatColor.RED + "<item>");
             throw new SignException(ex.getMessage(), ex);
         }
         return true;

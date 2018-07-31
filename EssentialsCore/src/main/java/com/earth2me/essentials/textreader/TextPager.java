@@ -2,6 +2,7 @@ package com.earth2me.essentials.textreader;
 
 import com.earth2me.essentials.CommandSource;
 import com.earth2me.essentials.I18n;
+import org.bukkit.ChatColor;
 
 import java.util.List;
 import java.util.Locale;
@@ -83,7 +84,7 @@ public class TextPager {
                     sender.sendMessage(tl("infoPages", page, pages, content));
                 }
                 for (int i = start; i < end && i < start + (onePage ? 20 : 9); i++) {
-                    sender.sendMessage("§r" + lines.get(i));
+                    sender.sendMessage(ChatColor.RESET + lines.get(i));
                 }
                 if (!onePage && page < pages && commandName != null) {
                     sender.sendMessage(tl("readNextPage", commandName, page + 1));
@@ -132,7 +133,7 @@ public class TextPager {
             sender.sendMessage(tl("infoChapterPages", content, page, pages));
         }
         for (int i = start; i < chapterend && i < start + (onePage ? 20 : 9); i++) {
-            sender.sendMessage("§r" + lines.get(i));
+            sender.sendMessage(ChatColor.RESET + lines.get(i));
         }
         if (!onePage && page < pages && commandName != null) {
             sender.sendMessage(tl("readNextPage", commandName, pageStr + " " + (page + 1)));

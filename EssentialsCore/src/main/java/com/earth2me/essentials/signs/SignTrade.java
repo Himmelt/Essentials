@@ -8,6 +8,7 @@ import com.earth2me.essentials.Trade.TradeType;
 import com.earth2me.essentials.User;
 import com.earth2me.essentials.utils.NumberUtil;
 import net.ess3.api.MaxMoneyException;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
@@ -33,7 +34,7 @@ public class SignTrade extends EssentialsSign {
             throw new SignException("You cannot trade for the same item type.");
         }
         trade.isAffordableFor(player);
-        sign.setLine(3, "§8" + username);
+        sign.setLine(3, ChatColor.DARK_GRAY + username);
         trade.charge(player);
         Trade.log("Sign", "Trade", "Create", username, trade, username, null, sign.getBlock().getLocation(), ess);
         return true;
@@ -105,8 +106,8 @@ public class SignTrade extends EssentialsSign {
         final String signOwner = sign.getLine(3);
 
         final boolean isOwner = (signOwner.length() > 3 && signOwner.substring(2).equalsIgnoreCase(username));
-        final boolean canBreak = isOwner ? true : player.isAuthorized("essentials.signs.trade.override");
-        final boolean canCollect = isOwner ? true : player.isAuthorized("essentials.signs.trade.override.collect");
+        final boolean canBreak = isOwner || player.isAuthorized("essentials.signs.trade.override");
+        final boolean canCollect = isOwner || player.isAuthorized("essentials.signs.trade.override.collect");
 
         if (canBreak) {
             try {

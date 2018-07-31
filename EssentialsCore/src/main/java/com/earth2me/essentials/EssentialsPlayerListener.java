@@ -164,12 +164,7 @@ public class EssentialsPlayerListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerJoin(final PlayerJoinEvent event) {
         final String joinMessage = event.getJoinMessage();
-        ess.runTaskAsynchronously(new Runnable() {
-            @Override
-            public void run() {
-                delayedJoin(event.getPlayer(), joinMessage);
-            }
-        });
+        ess.runTaskAsynchronously(() -> delayedJoin(event.getPlayer(), joinMessage));
         if (ess.getSettings().allowSilentJoinQuit() || ess.getSettings().isCustomJoinMessage()) {
             event.setJoinMessage(null);
         }
@@ -182,7 +177,6 @@ public class EssentialsPlayerListener implements Listener {
 
         ess.getBackup().onPlayerJoin();
         final User dUser = ess.getUser(player);
-
 
         if (dUser.isNPC()) {
             dUser.setNPC(false);

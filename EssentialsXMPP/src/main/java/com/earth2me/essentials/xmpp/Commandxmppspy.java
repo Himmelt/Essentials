@@ -3,6 +3,7 @@ package com.earth2me.essentials.xmpp;
 import com.earth2me.essentials.CommandSource;
 import com.earth2me.essentials.commands.EssentialsCommand;
 import com.earth2me.essentials.commands.NotEnoughArgumentsException;
+import org.bukkit.ChatColor;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
 
@@ -23,7 +24,7 @@ public class Commandxmppspy extends EssentialsCommand {
         final List<Player> matches = server.matchPlayer(args[0]);
 
         if (matches.isEmpty()) {
-            sender.sendMessage("§cThere are no players matching that name.");
+            sender.sendMessage(ChatColor.RED + "There are no players matching that name.");
         }
 
         for (Player p : matches) {

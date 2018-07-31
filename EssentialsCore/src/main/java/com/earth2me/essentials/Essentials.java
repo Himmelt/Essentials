@@ -212,9 +212,9 @@ public class Essentials extends JavaPlugin implements net.ess3.api.IEssentials {
             execTimer.mark("RegHandler");
 
             final MetricsStarter metricsStarter = new MetricsStarter(this);
-            if (metricsStarter.getStart() != null && metricsStarter.getStart() == true) {
+            if (metricsStarter.getStart() != null && metricsStarter.getStart()) {
                 runTaskLaterAsynchronously(metricsStarter, 1);
-            } else if (metricsStarter.getStart() != null && metricsStarter.getStart() == false) {
+            } else if (metricsStarter.getStart() != null && !metricsStarter.getStart()) {
                 final MetricsListener metricsListener = new MetricsListener(this, metricsStarter);
                 pm.registerEvents(metricsListener, this);
             }
@@ -586,6 +586,7 @@ public class Essentials extends JavaPlugin implements net.ess3.api.IEssentials {
                 LOGGER.log(Level.INFO, "Constructing new userfile from base player {0}", base.getName());
             }
             user = new User(base, this);
+            userMap.load(base);
         } else {
             user.update(base);
         }
@@ -738,11 +739,11 @@ public class Essentials extends JavaPlugin implements net.ess3.api.IEssentials {
         return vanishedPlayers;
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
     public Collection<Player> getOnlinePlayers() {
         try {
             // Needed for sanity here, the Bukkit API is a bit broken in the sense it only allows subclasses of Player to this list
-            return new ArrayList<>(getServer().getOnlinePlayers());
+            return (Collection<Player>) getServer().getOnlinePlayers();
         } catch (NoSuchMethodError ex) {
             try {
                 return Arrays.asList((Player[]) oldGetOnlinePlayers.invoke(getServer()));
