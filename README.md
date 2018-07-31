@@ -6,5 +6,3 @@ https://github.com/essentials/Essentials
 Building
 --------
 Build with Gradle
-
-Uisng Guava 18
